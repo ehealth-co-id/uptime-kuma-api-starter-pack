@@ -1,0 +1,30 @@
+version: '3'
+services:
+  nginx:
+    image: nginx:latest
+    volumes:
+    - "./nginx.conf.d:/etc/nginx/conf.d"
+    - "./ssl:/etc/nginx/ssl"
+    ports:
+    - "443:443"
+    - "80:80"
+    restart: always
+    depends_on:
+    - uptime-kuma
+    - uptime-kuma-api
+  uptime-kuma:
+    image: louislam/uptime-kuma
+    volumes:
+    - "./uptime_kuma:/app/data"
+  uptime-kuma-api:
+    image: ehealthcoid/uptime-kuma-api
+    volumes:
+    - "./uptime_kuma_api:/db"
+    environment:
+    - KUMA_SERVER=http://uptime-kuma:3001
+    - KUMA_USERNAME=some-username@example.com
+    - KUMA_PASSWORD=some-password
+    - ADMIN_PASSWORD=some-password
+    entrypoint: uvicorn main:app --host=0.0.0.0 --port=8000 --root-path=/api/v1 --reload
+
+
